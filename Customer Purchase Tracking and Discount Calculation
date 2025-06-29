@@ -1,0 +1,53 @@
+company  name : Rapidd Indo Global Technologies
+
+const fs = require("fs");
+
+// Function to read user input and parse commands
+function getInput() {
+    const input = fs.readFileSync(0, 'utf-8').trim().split('\n');
+    const n = parseInt(input[0]); // Number of purchases
+    const purchases = input.slice(1, n + 1).map(line => {
+        const [customerID, product, amount] = line.split(' ');
+        return [customerID, product, parseFloat(amount)];
+    });
+    const thresholds = input[n + 1].split(' ').map(Number); // Thresholds for discounts
+    return { purchases, threshold1: thresholds[0], threshold2: thresholds[1] };
+}
+
+function calculateTotalAfterDiscount(purchases, threshold1, threshold2) {
+    const customerData = new Map();
+
+    // Step 1: Aggregate spending per customer
+    for (const [customerID, , amount] of purchases) {
+        if (!customerData.has(customerID)) {
+            customerData.set(customerID, 0);
+        }
+        customerData.set(customerID, customerData.get(customerID) + amount);
+    }
+
+    // Step 2: Apply discounts and prepare result
+    const result = [];
+
+    for (const [customerID, total] of customerData.entries()) {
+        let discount = 0;
+        if (total > threshold2) {
+            discount = 20;
+        } else if (total > threshold1) {
+            discount = 10;
+        }
+
+        const discountedTotal = +(total * (1 - discount / 100)).toFixed(2); // Round to 2 decimal places
+        result.push({
+            customerID,
+            totalSpent: discountedTotal,
+            discountApplied: discount
+        });
+    }
+
+    return result;
+}
+
+// Main driver function
+const { purchases, threshold1, threshold2 } = getInput();
+const result = calculateTotalAfterDiscount(purchases, threshold1, threshold2);
+console.log(result);
