@@ -1,0 +1,39 @@
+Company Name : Rapidd Indo Global Technologies
+
+class LibraryManager {
+  constructor() {
+    this.books = []; // Each book: { title: string, status: 'Available' | 'Borrowed' }
+  }
+
+  addBook(title) {
+    this.books.push({ title, status: 'Available' });
+    return `Book added: ${title}`;
+  }
+
+  borrowBook(title) {
+    const book = this.books.find(b => b.title === title);
+    if (!book) return `${title} - Book not found`;
+    if (book.status === 'Borrowed') {
+      return `${title} is already borrowed.`;
+    }
+    book.status = 'Borrowed';
+    return `${title} - Borrowed`;
+  }
+
+  returnBook(title) {
+    const book = this.books.find(b => b.title === title);
+    if (!book) return `${title} - Book not found`;
+    book.status = 'Available';
+    return `${title} - Available`;
+  }
+
+  displayBooks() {
+    return this.books.map(b => `${b.title} - ${b.status}`).join(', ');
+  }
+
+  searchBook(title) {
+    const book = this.books.find(b => b.title === title);
+    if (!book) return `${title} - Book not found`;
+    return `${title} - ${book.status}`;
+  }
+}
