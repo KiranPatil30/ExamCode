@@ -1,0 +1,33 @@
+company Name : Rapidd Indo Global Technologies
+
+function calculateShiftScheduleAndOvertime(shifts, hourlyRate) {
+    // Step 1: Sort shifts by start time
+    shifts.sort((a, b) => a[0] - b[0]);
+
+    // Step 2: Merge overlapping shifts
+    const merged = [];
+    for (const [start, end] of shifts) {
+        if (merged.length === 0 || start > merged[merged.length - 1][1]) {
+            merged.push([start, end]);
+        } else {
+            merged[merged.length - 1][1] = Math.max(merged[merged.length - 1][1], end);
+        }
+    }
+
+    // Step 3: Compute longest shift and total overtime
+    let longestShift = 0;
+    let totalOvertime = 0;
+
+    for (const [start, end] of merged) {
+        const duration = end - start;
+        longestShift = Math.max(longestShift, duration);
+        if (duration > 8) {
+            totalOvertime += (duration - 8) * hourlyRate * 1.5;
+        }
+    }
+
+    return {
+        longestShift,
+        overtimePay: Math.round(totalOvertime)
+    };
+}
