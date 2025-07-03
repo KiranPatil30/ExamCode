@@ -1,0 +1,122 @@
+INput: 
+3
+101 Honda
+102 Toyota
+103 tesla
+4
+Alice 101 
+bob 102
+charlie 101
+diana 103
+
+Ouput:
+Alice rented car 101 (Honda)
+diana rented car 103 (tesla)
+bob rented car 102 (Toyota)
+CarNotAvailableException: Car 101 is already rented
+
+
+import java.util.*;
+import java.util.concurrent.*;
+
+// Car class
+class Car {
+    int carId;
+    String model;
+    boolean available;
+
+    public Car(int carId, String model) {
+        this.carId = carId;
+        this.model = model;
+        this.available = true;
+    }
+}
+
+// Singleton RentalService class
+class RentalService {
+    private static RentalService instance;
+    Map<Integer, Car> cars = new ConcurrentHashMap<>();
+
+    private RentalService() {}
+
+    public static synchronized RentalService getInstance() {
+        if (instance == null) {
+            instance = new RentalService();
+        }
+        return instance;
+    }
+
+    public synchronized String rentCar(int carId, String customerName) {
+        Car car = cars.get(carId);
+        if (car != null && car.available) {
+            car.available = false;
+            return customerName + " rented car " + carId + " (" + car.model + ")";
+        } else {
+            return "CarNotAvailableException: Car " + carId + " is already rented";
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        RentalService rentalService = RentalService.getInstance();
+
+        int n = sc.nextInt(); // number of cars
+        for (int i = 0; i < n; i++) {
+            int carId = sc.nextInt();
+            String model = sc.next();
+            rentalService.cars.put(carId, new Car(carId, model));
+        }
+
+        int m = sc.nextInt(); // number of customers
+        sc.nextLine(); // consume remaining newline
+
+        // Store requests
+        List<String[]> requests = new ArrayList<>();
+
+        for (int i = 0; i < m; i++) {
+            String[] parts = sc.nextLine().split(" ");
+            requests.add(parts);
+        }
+
+        // Sort requests by carId (index 1)
+        requests.sort(Comparator.comparingInt(r -> Integer.parseInt(r[1])));
+
+        // Store results to print in order
+        List<String> results = Collections.synchronizedList(new ArrayList<>());
+        List<Thread> threads = new ArrayList<>();
+
+        for (String[] req : requests) {
+            String customerName = req[0];
+            int carIdToRent = Integer.parseInt(req[1]);
+
+            Thread t = new Thread(() -> {
+                String res = rentalService.rentCar(carIdToRent, customerName);
+                results.add(res);
+            });
+            threads.add(t);
+        }
+
+        // Start all threads
+        for (Thread t : threads) {
+            t.start();
+        }
+
+        // Wait for all threads to finish
+        for (Thread t : threads) {
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Print results in order of sorted requests
+        for (String output : results) {
+            System.out.println(output);
+        }
+
+        sc.close();
+    }
+}
