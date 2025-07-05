@@ -1,0 +1,57 @@
+import json
+import copy
+import re
+
+class SanitizationError(Exception):
+    pass
+
+def sanitize_message(message):
+    # Check if message is empty or whitespace-only
+    if not message or message.isspace():
+        return False
+    # Check if message contains only alphabetic characters
+    if not message.isalpha():
+        return False
+    return True
+
+def reverse_message(message):
+    return message[::-1]
+
+def main():
+    try:
+        raw = input()
+        messages = json.loads(raw)
+        
+        # Task 1: Create deep copy for backup
+        original_backup = copy.deepcopy(messages)
+        
+        # Task 2: Sanitize messages
+        sanitized = []
+        seen = set()
+        
+        for msg in messages:
+            if sanitize_message(msg):
+                lowercase_msg = msg.lower()
+                if lowercase_msg not in seen:
+                    seen.add(lowercase_msg)
+                    sanitized.append(msg)
+        
+        # Task 3: Exception handling for empty sanitized list
+        if not sanitized:
+            raise SanitizationError("All messages were invalid after sanitization.")
+        
+        # Task 4: Reverse valid messages
+        reversed_msgs = [reverse_message(msg) for msg in sanitized]
+        
+        # Print output
+        print(f"Original Backup: {original_backup}")
+        print(f"Sanitized Messages: {sanitized}")
+        print(f"Reversed Messages: {reversed_msgs}")
+        
+    except json.JSONDecodeError:
+        print("Error: Invalid JSON input format.")
+    except SanitizationError as e:
+        print(f"Error: {str(e)}")
+
+if __name__ == "__main__":
+    main()
