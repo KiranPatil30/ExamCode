@@ -1,0 +1,59 @@
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine());
+
+        Map<Integer, Integer> inventory = new HashMap<>();
+
+        for (int i = 0; i < n; i++) {
+            String[] command = sc.nextLine().split(" ");
+
+            switch (command[0]) {
+                case "Add":
+                    int addId = Integer.parseInt(command[1]);
+                    int addQty = Integer.parseInt(command[2]);
+                    inventory.put(addId, inventory.getOrDefault(addId, 0) + addQty);
+                    break;
+
+                case "Remove":
+                    int removeId = Integer.parseInt(command[1]);
+                    int removeQty = Integer.parseInt(command[2]);
+                    if (inventory.containsKey(removeId)) {
+                        int newQty = inventory.get(removeId) - removeQty;
+                        if (newQty > 0) {
+                            inventory.put(removeId, newQty);
+                        } else {
+                            inventory.remove(removeId);
+                        }
+                    }
+                    break;
+
+                case "Display":
+                    inventory.entrySet().stream()
+                            .sorted((a, b) -> b.getValue() - a.getValue())
+                            .forEach(entry -> System.out.println(entry.getKey() + ": " + entry.getValue()));
+                    break;
+
+                case "LowStock":
+                    List<Integer> lowStockItems = new ArrayList<>();
+                    for (Map.Entry<Integer, Integer> entry : inventory.entrySet()) {
+                        if (entry.getValue() < 5) {
+                            lowStockItems.add(entry.getKey());
+                        }
+                    }
+                    if (lowStockItems.isEmpty()) {
+                        System.out.println("No items with low stock.");
+                    } else {
+                        for (int id : lowStockItems) {
+                            System.out.println(id);
+                        }
+                    }
+                    break;
+            }
+        }
+
+        sc.close();
+    }
+}
