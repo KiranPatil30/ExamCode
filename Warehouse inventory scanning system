@@ -28,7 +28,6 @@ def spiral_traversal(matrix, N, M):
     
     return result
 
-
 # Reading input
 N, M = map(int, input().split())  # Read matrix dimensions
 matrix = [list(map(int, input().split())) for _ in range(N)]  # Read matrix elements
