@@ -1,0 +1,56 @@
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine());
+        Map<String, List<Integer>> meters = new LinkedHashMap<>();
+
+        for (int i = 0; i < n; i++) {
+            String[] parts = sc.nextLine().split(" ");
+            String id = parts[0];
+            if (parts.length < 2 || parts[1].trim().isEmpty()) {
+                meters.put(id, null);
+            } else {
+                List<Integer> usage = new ArrayList<>();
+                for (String s : parts[1].split(",")) usage.add(Integer.parseInt(s));
+                meters.put(id, usage);
+            }
+        }
+
+        int threshold = Integer.parseInt(sc.nextLine());
+        int target = Integer.parseInt(sc.nextLine());
+
+        for (String id : meters.keySet()) {
+            List<Integer> u = meters.get(id);
+            if (u == null || u.size() < 3) {
+                System.out.println("Error for " + id + ": Missing or incomplete usage data");
+                continue;
+            }
+
+            System.out.println("Meter: " + id);
+
+            // Sliding Window
+            boolean spike = false;
+            for (int i = 0; i < u.size() - 2; i++)
+                if (u.get(i) + u.get(i + 1) + u.get(i + 2) > threshold) { spike = true; break; }
+            System.out.println("Sliding Window Spike Detected: " + (spike ? "Yes" : "No"));
+
+            // 4Sum
+            boolean fourSum = false;
+            outer:
+            for (int i = 0; i < u.size(); i++)
+                for (int j = i + 1; j < u.size(); j++)
+                    for (int k = j + 1; k < u.size(); k++)
+                        for (int l = k + 1; l < u.size(); l++)
+                            if (u.get(i) + u.get(j) + u.get(k) + u.get(l) == target) { fourSum = true; break outer; }
+            System.out.println("4Sum Match for Target " + target + ": " + (fourSum ? "Yes" : "No"));
+
+            // Prefix Sum
+            List<Integer> prefix = new ArrayList<>();
+            int sum = 0;
+            for (int val : u) prefix.add(sum += val);
+            System.out.println("Prefix Sum: " + prefix);
+        }
+    }
+}
