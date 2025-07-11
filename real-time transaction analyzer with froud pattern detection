@@ -1,0 +1,73 @@
+import java.util.Scanner;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Comparator;
+interface Fraud Detector {
+boolean detect (List<Transaction> transactions, int target, List<String> resultTxnIds);
+}
+class Transaction {
+String txnId;
+String userId;
+int amount;
+public Transaction (String txnId, String userId, int amount) {
+this.txnId = txnId;
+this.userId = userId;
+this.amount = amount;
+}
+@Override
+public String toString() {
+return "TxnID: + txnId ', UserID: userId + Amount: amount;
+}
+}
+class FourSumDetector implements FraudDetector {
+public boolean detect(List<Transaction> transactions, int target, List<String> resultTxnIds) {
+int n = transactions.size();
+List<int[]> all = new ArrayList<>();
+for (int i = 0 i < n; i++) {
+}
+all.add(new int[]{transactions.get(i).amount, i});
+all.sort(Comparator.comparingInt(a -> a[0]));
+for (int i = 0 i < n - 3 ;i++) {
+for (int j = i + 1 j < n - 2 j++) {
+int left = j + 1j right = n - 1;
+while (left < right) {
+int sum = all.get(i) [0] + all.get(j) [0] + all.get(left) [0] + all.get(right)[0];
+if (sum == target) {
+resultTxnIds.add(transactions.get(all.get(i)[1]).txnId);
+resultTxnIds.add(transactions.get(all.get(j)[1]).txnId);
+resultTxnIds.add(transactions.get(all.get(left) [1]).txnId);
+resultTxnIds.add(transactions.get(all.get(right)[1]).txnId);
+return true;
+} else if (sum < target) left++;
+else right--;
+}
+}
+}
+return false;
+}
+}
+
+public class Main {
+public static void main(String[] args) {
+Scanner sc = new Scanner(System.in);
+int n = Integer.parseInt(sc.nextLine());
+List<Transaction> transactions = new ArrayList<>();
+for (int i = 0 i < n; i++) {
+String[] parts = sc.nextLine().split(";");
+transactions.add(new Transaction (parts[0], parts [1], Integer.parseInt(parts [2])));
+}
+int target = Integer.parseInt(sc.nextLine());
+System.out.println("All Transactions:");
+for (Transaction t transactions) {
+System.out.println(t);
+}
+FraudDetector detector = new FourSumDetector();
+List<String> suspicious = new ArrayList<>();
+if (detector.detect(transactions, target, suspicious)) {
+System.out.println("Suspicious Pattern Detected:");
+for (String id: suspicious) {
+System.out.println(id);
+}
+}
+}
+}
