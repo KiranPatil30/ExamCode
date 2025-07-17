@@ -1,0 +1,86 @@
+import java.util.*;
+
+abstract class DeliveryUnit implements Runnable {
+    protected String deliveryId, vehicleType, result;
+    protected int time;
+
+    DeliveryUnit(String deliveryId, String vehicleType, int time) {
+        this.deliveryId = deliveryId;
+        this.vehicleType = vehicleType;
+        this.time = time;
+    }
+
+    public String getResult() {
+        return result;
+    }
+}
+
+class DeliveryAssignmentException extends Exception {
+    DeliveryAssignmentException(String msg) {
+        super(msg);
+    }
+}
+
+class Bike extends DeliveryUnit {
+    Bike(String id, int time) { super(id, "BIKE", time); }
+    public void run() {
+        try { Thread.sleep(time); result = "Delivery Completed: " + deliveryId + " via BIKE in " + time + "ms"; }
+        catch (InterruptedException e) { result = "Failed to deliver: " + deliveryId; }
+    }
+}
+
+class Truck extends DeliveryUnit {
+    Truck(String id, int time) { super(id, "TRUCK", time); }
+    public void run() {
+        try { Thread.sleep(time); result = "Delivery Completed: " + deliveryId + " via TRUCK in " + time + "ms"; }
+        catch (InterruptedException e) { result = "Failed to deliver: " + deliveryId; }
+    }
+}
+
+class Drone extends DeliveryUnit {
+    Drone(String id, int time) { super(id, "DRONE", time); }
+    public void run() {
+        try { Thread.sleep(time); result = "Delivery Completed: " + deliveryId + " via DRONE in " + time + "ms"; }
+        catch (InterruptedException e) { result = "Failed to deliver: " + deliveryId; }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine());
+
+        Map<String, DeliveryUnit> deliveries = new TreeMap<>();
+        List<Thread> threads = new ArrayList<>();
+
+        for (int i = 0; i < n; i++) {
+            String[] p = sc.nextLine().split(" ");
+            String id = p[0], type = p[1];
+            int time = Integer.parseInt(p[2]);
+
+            try {
+                if (time <= 0) throw new DeliveryAssignmentException("Invalid delivery time");
+
+                DeliveryUnit unit;
+                switch (type) {
+                    case "BIKE": unit = new Bike(id, time); break;
+                    case "TRUCK": unit = new Truck(id, time); break;
+                    case "DRONE": unit = new Drone(id, time); break;
+                    default: throw new DeliveryAssignmentException("Invalid vehicle type");
+                }
+
+                deliveries.put(id, unit);
+                Thread t = new Thread(unit);
+                threads.add(t);
+                t.start();
+
+            } catch (DeliveryAssignmentException e) {
+                System.out.println("Failed to assign " + id + ": " + e.getMessage());
+            }
+        }
+
+        for (Thread t : threads) try { t.join(); } catch (InterruptedException ignored) {}
+
+        deliveries.values().forEach(u -> System.out.println(u.getResult()));
+    }
+}
