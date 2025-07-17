@@ -1,0 +1,62 @@
+
+
+const fs = require("fs");
+
+// Function to read user input and parse commands
+// This function is provided and assumed to be correct.
+function getInput() {
+  // Read input from stdin, split into lines
+  const input = fs.readFileSync(0, 'utf-8').trim().split('\n');
+  const n = parseInt(input[0]); // Number of records
+  // Parse student data from lines 1 to n
+  const students = input.slice(1, n + 1).map(line => {
+    const [name, subject, score] = line.split(' ');
+    return { name, subject, score: parseFloat(score) };
+  });
+  // The last line is the sort key
+  const sortKey = input[n + 1].trim();
+  return { students, sortKey };
+}
+
+function getComparator(sortKey) {
+  // Return a comparator arrow function
+  return (a, b) => {
+    // Primary comparison logic
+    if (sortKey === 'score') {
+      // Sort by score in descending order
+      if (a.score !== b.score) {
+        return b.score - a.score;
+      }
+    } else if (sortKey === 'subject') {
+      // Sort by subject in ascending lexicographic order
+      if (a.subject !== b.subject) {
+        return a.subject.localeCompare(b.subject);
+      }
+    } else if (sortKey === 'name') {
+        // Sort by name in ascending lexicographic order
+        // The primary sort is the same as the tie-breaker
+        return a.name.localeCompare(b.name);
+    }
+    
+    // Tie-breaker: If primary keys are equal, sort by name in ascending order.
+    return a.name.localeCompare(b.name);
+  };
+}
+
+/**
+ * Sorts an array of student objects.
+ * @param {Array<object>} students - The array of student objects.
+ * @param {string} sortKey - The key to sort by.
+ * @returns {Array<object>} The sorted array of students.
+ */
+function sortStudents(students, sortKey) {
+  // Get the dynamic comparator from our closure function
+  const comparator = getComparator(sortKey);
+  // Sort the array using the dynamic comparator and return the result
+  return students.sort(comparator);
+}
+
+// Main driver function to get input and process the result
+const { students, sortKey } = getInput();
+const result = sortStudents(students, sortKey);
+console.log(result);
