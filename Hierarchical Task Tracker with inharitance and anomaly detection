@@ -1,0 +1,56 @@
+class DuplicateTaskIDException(Exception): pass
+class InvalidTaskException(Exception): pass
+
+class BaseTask:
+    def __init__(self, task_id, effort):
+        self.task_id = task_id
+        self.effort = effort
+
+class DeveloperTask(BaseTask):
+    def __init__(self, task_id, effort, developer):
+        super().__init__(task_id, effort)
+        self.developer = developer
+
+def main():
+    n = int(input())
+    task_ids, dev_tasks = set(), {}
+
+    try:
+        for _ in range(n):
+            tid, e, d = input().split()
+            tid, e = int(tid), int(e)
+            if tid in task_ids:
+                raise DuplicateTaskIDException("Error: Duplicate task ID found.")
+            if e <= 0 or not d.isalpha():
+                raise InvalidTaskException("Error: Invalid task details found.")
+            task_ids.add(tid)
+            dev_tasks.setdefault(d, []).append(DeveloperTask(tid, e, d))
+    except Exception as ex:
+        print(ex)
+        return
+
+    print("Effort Summary:")
+    anomaly_found = False
+
+    for dev in sorted(dev_tasks):
+        tasks = sorted(dev_tasks[dev], key=lambda x: x.task_id)
+        efforts, prefix_sum, total = [], [], 0
+
+        for t in tasks:
+            efforts.append(t.effort)
+            total += t.effort
+            prefix_sum.append(total)
+
+        print(f"{dev}: {prefix_sum}")
+
+        for i in range(1, len(efforts)):
+            if efforts[i] < efforts[i-1]:
+                print(f"Anomaly Detected: {dev}")
+                anomaly_found = True
+                break
+
+    if not anomaly_found:
+        print("No anomalies found.")
+
+if __name__ == "__main__":
+    main()
