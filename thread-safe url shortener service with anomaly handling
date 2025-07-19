@@ -1,0 +1,47 @@
+import threading
+import re
+
+class URLShortener:
+    def __init__(self):
+        self.counter = 0
+        self.lock = threading.Lock()
+        self.url_map = {}
+        self.code_map = {}
+
+    def encode(self, url):
+        if not re.match(r'^https?://', url):
+            return f"Error: Invalid URL: {url}"
+        
+        with self.lock:
+            if url in self.url_map:
+                return f"Shortened: {self.url_map[url]}"
+            
+            self.counter += 1
+            code = f"{self.counter:06d}"
+            self.url_map[url] = code
+            self.code_map[code] = url
+            return f"Shortened: {code}"
+
+    def decode(self, code):
+        with self.lock:
+            if code in self.code_map:
+                return f"Original: {self.code_map[code]}"
+            return f"Error: Short code not found: {code}"
+
+def process_input():
+    shortener = URLShortener()
+    n = int(input())
+    for _ in range(n):
+        parts = input().strip().split(maxsplit=1)
+        op = parts[0] if parts else ""
+        val = parts[1] if len(parts) > 1 else ""
+        
+        if op == "ENCODE":
+            print(shortener.encode(val))
+        elif op == "DECODE":
+            print(shortener.decode(val))
+        else:
+            print("Error: Invalid operation.")
+
+if __name__ == "__main__":
+    process_input()
