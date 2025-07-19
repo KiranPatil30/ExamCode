@@ -1,0 +1,49 @@
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        int n = sc.nextInt(); // number of readings
+        int[] readings = new int[n];
+        for (int i = 0; i < n; i++) {
+            readings[i] = sc.nextInt();
+        }
+        int k = sc.nextInt(); // window size
+        int T = sc.nextInt(); // threshold
+
+        int maxSum = -1;
+        int startIndex = -1;
+
+        // Sliding window with uniqueness check
+        for (int i = 0; i <= n - k; i++) {
+            Set<Integer> unique = new HashSet<>();
+            int sum = 0;
+            boolean hasDuplicate = false;
+
+            for (int j = i; j < i + k; j++) {
+                if (unique.contains(readings[j])) {
+                    hasDuplicate = true;
+                    break;
+                }
+                unique.add(readings[j]);
+                sum += readings[j];
+            }
+
+            if (!hasDuplicate && sum > T) {
+                if (sum > maxSum) {
+                    maxSum = sum;
+                    startIndex = i;
+                }
+            }
+        }
+
+        if (startIndex == -1) {
+            System.out.println("No anomaly detected");
+        } else {
+            for (int i = startIndex; i < startIndex + k; i++) {
+                System.out.print(readings[i] + " ");
+            }
+        }
+    }
+}
