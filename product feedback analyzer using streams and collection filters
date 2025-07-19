@@ -1,0 +1,68 @@
+import java.util.*;
+import java.util.stream.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int n = Integer.parseInt(sc.nextLine());
+        List<String[]> feedbacks = new ArrayList<>();
+
+        for (int i = 0; i < n; i++) {
+            String line = sc.nextLine().trim();
+            String[] parts = line.split("\\|");
+            parts[1] = parts[1].trim();
+            parts[2] = parts[2].trim();
+            feedbacks.add(parts);
+        }
+
+        // Group by product -> list of ratings
+        Map<String, List<Integer>> productRatings = feedbacks.stream()
+                .collect(Collectors.groupingBy(
+                        f -> f[0],
+                        Collectors.mapping(f -> Integer.parseInt(f[1]), Collectors.toList())
+                ));
+
+        // Calculate avg >= 4.0 products
+        List<String> topRatedProducts = productRatings.entrySet().stream()
+                .filter(e -> e.getValue().stream().mapToInt(i -> i).average().orElse(0.0) >= 4.0)
+                .map(Map.Entry::getKey)
+                .sorted()
+                .collect(Collectors.toList());
+
+        // Count of reviews per product
+        Map<String, Long> reviewCounts = feedbacks.stream()
+                .collect(Collectors.groupingBy(f -> f[0], Collectors.counting()));
+
+        // Reviews containing "excellent" case-insensitive in order
+        List<String> excellentReviews = feedbacks.stream()
+                .map(f -> f[2])
+                .filter(r -> r.toLowerCase().contains("excellent"))
+                .collect(Collectors.toList());
+
+        // Print Top Rated Products
+        if (!topRatedProducts.isEmpty()) {
+            System.out.println("Top Rated Products:");
+            topRatedProducts.forEach(System.out::println);
+        }
+
+        // Print Review Counts
+        if (!reviewCounts.isEmpty()) {
+            System.out.println("Review Counts:");
+            reviewCounts.entrySet().stream()
+                    .sorted((e1, e2) -> {
+                        int cmp = Long.compare(e2.getValue(), e1.getValue());
+                        if (cmp == 0) {
+                            return e1.getKey().compareTo(e2.getKey());
+                        }
+                        return cmp;
+                    })
+                    .forEach(e -> System.out.println(e.getKey() + ": " + e.getValue()));
+        }
+
+        // Print Excellent Reviews
+        if (!excellentReviews.isEmpty()) {
+            System.out.println("Excellent Reviews:");
+            excellentReviews.forEach(System.out::println);
+        }
+    }
+}
