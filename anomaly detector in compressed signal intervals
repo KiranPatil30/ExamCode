@@ -1,0 +1,43 @@
+class InvalidIntervalError(Exception):
+    pass
+
+def find_peak_anomaly_overlap(intervals):
+    events = []
+    for start, end in intervals:
+        if start > end:
+            raise InvalidIntervalError(f"Error: Invalid interval found: {start} {end}")
+        events.append((start, 1))
+        events.append((end + 1, -1))
+
+    events.sort()
+    max_overlap = 0
+    current_overlap = 0
+    time_of_max_overlap = None
+
+    for time, change in events:
+        current_overlap += change
+        if current_overlap > max_overlap:
+            max_overlap = current_overlap
+            time_of_max_overlap = time
+        elif current_overlap == max_overlap and time < time_of_max_overlap:
+            time_of_max_overlap = time
+
+    return time_of_max_overlap, max_overlap
+
+def main():
+    try:
+        n = int(input())
+        intervals = []
+        for _ in range(n):
+            start, end = map(int, input().split())
+            intervals.append((start, end))
+
+        time, count = find_peak_anomaly_overlap(intervals)
+        print(f"Max Anomaly Overlap at Time: {time}")
+        print(f"Overlap Count: {count}")
+
+    except InvalidIntervalError as e:
+        print(e)
+
+if __name__ == "__main__":
+    main()
